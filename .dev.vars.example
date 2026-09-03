@@ -1,0 +1,5 @@
+REDDIT_CLIENT_ID="your-client-id"
+REDDIT_CLIENT_SECRET="your-client-secret"
+REDDIT_REDIRECT_URI="http://localhost:8787/auth/reddit/callback"
+SESSION_SECRET="replace-with-a-long-random-value"
+APP_USER_AGENT="web:reddit-poster:v1.0.0 (by /u/your_reddit_name)"
