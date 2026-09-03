@@ -1,6 +1,6 @@
 # Reddit Poster
 
-Eine kleine Cloudflare-Worker-App, mit der du Reddit-Beiträge vorbereiten, prüfen und nach ausdrücklicher Bestätigung veröffentlichen kannst.
+Eine kleine installierbare Cloudflare-Worker-App, mit der du Reddit-Beiträge ohne Suchen vorbereiten und öffnen kannst. Nach einer Reddit-API-Freigabe kann sie Beiträge auch direkt veröffentlichen.
 
 ## Enthalten
 
@@ -12,6 +12,9 @@ Eine kleine Cloudflare-Worker-App, mit der du Reddit-Beiträge vorbereiten, prü
 - Bestätigungsdialog vor jedem öffentlichen Beitrag
 - verschlüsselte Sitzung in einem HttpOnly-Cookie
 - Smartphone- und Desktop-Ansicht
+- installierbare Homescreen-App (PWA)
+- gespeicherte Subreddit-Schnellwahl
+- API-freier Schnellmodus: ausgefüllten Beitrag direkt in Reddit öffnen
 
 ## 1. Reddit-App anlegen
 

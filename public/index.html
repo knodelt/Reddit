@@ -4,19 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#121417" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="QuickPost" />
     <meta name="description" content="Reddit-Beiträge ruhig vorbereiten, prüfen und nach Bestätigung veröffentlichen." />
-    <title>Reddit Poster</title>
+    <title>QuickPost for Reddit</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
     <link rel="stylesheet" href="/styles.css" />
     <script src="/app.js" defer></script>
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="/" aria-label="Reddit Poster Startseite">
-        <span class="brand-mark" aria-hidden="true">r/</span>
-        <span>Reddit Poster</span>
+      <a class="brand" href="/" aria-label="QuickPost Startseite">
+        <span class="brand-mark" aria-hidden="true">Q</span>
+        <span>QuickPost <small>for Reddit</small></span>
       </a>
       <div class="account" id="account">
         <span class="account-state" id="accountState">Nicht verbunden</span>
+        <button class="button button-secondary" id="installButton" type="button">Installieren</button>
         <a class="button button-secondary" id="loginButton" href="/auth/reddit">Mit Reddit verbinden</a>
         <button class="button button-ghost" id="logoutButton" type="button" hidden>Abmelden</button>
       </div>
@@ -32,12 +39,23 @@
           <span class="save-state" id="saveState">Entwurf gespeichert</span>
         </div>
 
+        <div class="handoff-banner" id="handoffBanner">
+          <span class="handoff-icon" aria-hidden="true">↗</span>
+          <div><strong>Schnellmodus aktiv</strong><p>Dein fertiger Beitrag öffnet sich direkt in Reddit. Dort drückst du nur noch auf „Posten“.</p></div>
+        </div>
+
         <form id="postForm">
           <label for="subreddit">Subreddit</label>
           <div class="prefix-input">
             <span>r/</span>
             <input id="subreddit" name="subreddit" autocomplete="off" maxlength="21" placeholder="zum Beispiel de" required />
           </div>
+
+          <div class="favorites-heading">
+            <span>Schnellwahl</span>
+            <button id="favoriteButton" type="button">☆ Aktuelles Subreddit merken</button>
+          </div>
+          <div class="favorites" id="favoritesList" aria-label="Gespeicherte Subreddits"></div>
 
           <fieldset class="type-switch">
             <legend>Beitragsart</legend>
@@ -72,7 +90,7 @@
 
           <div class="form-actions">
             <button class="button button-ghost" id="clearButton" type="button">Entwurf leeren</button>
-            <button class="button button-primary" id="reviewButton" type="submit">Beitrag prüfen</button>
+            <button class="button button-primary" id="reviewButton" type="submit">In Reddit öffnen</button>
           </div>
         </form>
         <div class="notice" id="notice" role="status" hidden></div>
@@ -94,8 +112,8 @@
           </div>
         </article>
         <div class="safety-note">
-          <strong>Du behältst die Kontrolle.</strong>
-          <p>Ein Beitrag wird erst nach deiner Bestätigung öffentlich an Reddit gesendet.</p>
+          <strong>Kein Suchen mehr.</strong>
+          <p>Subreddit wählen, schreiben und den fertigen Beitrag direkt in Reddit öffnen.</p>
         </div>
       </aside>
     </main>
@@ -111,6 +129,20 @@
           <button class="button button-ghost" value="cancel">Noch einmal bearbeiten</button>
           <button class="button button-primary" id="publishButton" value="default">Jetzt veröffentlichen</button>
         </div>
+      </form>
+    </dialog>
+
+    <dialog id="installDialog">
+      <form method="dialog" class="dialog-card">
+        <div class="dialog-icon" aria-hidden="true">＋</div>
+        <p class="eyebrow">Auf dem iPhone installieren</p>
+        <h2>QuickPost auf den Home-Bildschirm</h2>
+        <ol class="install-steps">
+          <li><span>1</span>Unten in Safari auf <strong>Teilen</strong> tippen.</li>
+          <li><span>2</span><strong>Zum Home-Bildschirm</strong> auswählen.</li>
+          <li><span>3</span>Oben rechts auf <strong>Hinzufügen</strong> tippen.</li>
+        </ol>
+        <button class="button button-primary dialog-full" value="close">Verstanden</button>
       </form>
     </dialog>
   </body>

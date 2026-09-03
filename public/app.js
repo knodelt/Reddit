@@ -4,17 +4,28 @@ const publishButton = document.querySelector("#publishButton");
 const loginButton = document.querySelector("#loginButton");
 const logoutButton = document.querySelector("#logoutButton");
 const accountState = document.querySelector("#accountState");
+const installButton = document.querySelector("#installButton");
+const installDialog = document.querySelector("#installDialog");
+const reviewButton = document.querySelector("#reviewButton");
+const handoffBanner = document.querySelector("#handoffBanner");
+const favoriteButton = document.querySelector("#favoriteButton");
+const favoritesList = document.querySelector("#favoritesList");
 const notice = document.querySelector("#notice");
 const saveState = document.querySelector("#saveState");
 const fields = Object.fromEntries(["subreddit", "title", "text", "url", "nsfw", "spoiler"].map((id) => [id, document.querySelector(`#${id}`)]));
 const draftKey = "reddit-poster-draft-v1";
+const favoritesKey = "reddit-poster-favorites-v1";
 let connected = false;
 let saveTimer;
+let installPrompt;
+let favorites = loadFavorites();
 
 restoreDraft();
 updateView();
+renderFavorites();
 loadAccount();
 showLoginResult();
+registerServiceWorker();
 
 form.addEventListener("input", () => {
   updateView();
@@ -30,8 +41,10 @@ form.addEventListener("submit", (event) => {
   hideNotice();
   if (!form.reportValidity()) return;
   if (!connected) {
-    showNotice("Verbinde zuerst dein Reddit-Konto. Dein Entwurf bleibt dabei erhalten.", true);
-    loginButton.focus();
+    const data = readForm();
+    localStorage.setItem(draftKey, JSON.stringify(data));
+    if (data.kind === "self" && data.text) navigator.clipboard?.writeText(data.text).catch(() => {});
+    window.location.assign(buildRedditSubmitUrl(data));
     return;
   }
   const data = readForm();
@@ -81,6 +94,36 @@ logoutButton.addEventListener("click", async () => {
   showNotice("Reddit-Konto wurde getrennt.");
 });
 
+favoriteButton.addEventListener("click", () => {
+  const subreddit = normalizeSubreddit(fields.subreddit.value);
+  if (!/^[A-Za-z0-9_]{2,21}$/.test(subreddit)) {
+    showNotice("Gib zuerst ein gültiges Subreddit ein.", true);
+    fields.subreddit.focus();
+    return;
+  }
+  if (!favorites.some((item) => item.toLowerCase() === subreddit.toLowerCase())) favorites.unshift(subreddit);
+  favorites = favorites.slice(0, 12);
+  saveFavorites();
+  renderFavorites();
+  favoriteButton.textContent = "★ Gespeichert";
+  setTimeout(() => { favoriteButton.textContent = "☆ Aktuelles Subreddit merken"; }, 1200);
+});
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  installPrompt = event;
+});
+
+installButton.addEventListener("click", async () => {
+  if (installPrompt) {
+    installPrompt.prompt();
+    await installPrompt.userChoice;
+    installPrompt = null;
+    return;
+  }
+  installDialog.showModal();
+});
+
 async function loadAccount() {
   try {
     const response = await fetch("/api/me");
@@ -99,6 +142,21 @@ function renderAccount() {
   loginButton.hidden = connected;
   logoutButton.hidden = !connected;
   if (!connected) accountState.textContent = "Nicht verbunden";
+  reviewButton.textContent = connected ? "Beitrag prüfen" : "In Reddit öffnen";
+  handoffBanner.classList.toggle("connected", connected);
+  handoffBanner.querySelector("strong").textContent = connected ? "Direktes Veröffentlichen bereit" : "Schnellmodus aktiv";
+  handoffBanner.querySelector("p").textContent = connected
+    ? "Nach deiner Kontrolle kann der Beitrag direkt veröffentlicht werden."
+    : "Dein fertiger Beitrag öffnet sich direkt in Reddit. Dort drückst du nur noch auf „Posten“.";
+}
+
+function buildRedditSubmitUrl(data) {
+  const params = new URLSearchParams({
+    title: data.title,
+    type: data.kind === "link" ? "LINK" : "TEXT",
+  });
+  params.set(data.kind === "link" ? "url" : "text", data.kind === "link" ? data.url : data.text);
+  return `https://www.reddit.com/r/${encodeURIComponent(data.subreddit)}/submit?${params}`;
 }
 
 function readForm() {
@@ -166,6 +224,52 @@ function restoreDraft() {
   } catch {
     localStorage.removeItem(draftKey);
   }
+}
+
+function loadFavorites() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(favoritesKey));
+    return Array.isArray(saved) ? saved : ["FragReddit", "de", "Ratschlag"];
+  } catch {
+    return ["FragReddit", "de", "Ratschlag"];
+  }
+}
+
+function saveFavorites() {
+  localStorage.setItem(favoritesKey, JSON.stringify(favorites));
+}
+
+function renderFavorites() {
+  favoritesList.replaceChildren();
+  favorites.forEach((subreddit) => {
+    const chip = document.createElement("span");
+    chip.className = "favorite";
+    const select = document.createElement("button");
+    select.type = "button";
+    select.className = "favorite-main";
+    select.textContent = `r/${subreddit}`;
+    select.addEventListener("click", () => {
+      fields.subreddit.value = subreddit;
+      updateView();
+      scheduleSave();
+    });
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "favorite-remove";
+    remove.setAttribute("aria-label", `r/${subreddit} aus der Schnellwahl entfernen`);
+    remove.textContent = "×";
+    remove.addEventListener("click", () => {
+      favorites = favorites.filter((item) => item !== subreddit);
+      saveFavorites();
+      renderFavorites();
+    });
+    chip.append(select, remove);
+    favoritesList.append(chip);
+  });
+}
+
+function registerServiceWorker() {
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
 }
 
 function showLoginResult() {
