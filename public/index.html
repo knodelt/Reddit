@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#121417" />
+    <meta name="description" content="Reddit-Beiträge ruhig vorbereiten, prüfen und nach Bestätigung veröffentlichen." />
+    <title>Reddit Poster</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Reddit Poster Startseite">
+        <span class="brand-mark" aria-hidden="true">r/</span>
+        <span>Reddit Poster</span>
+      </a>
+      <div class="account" id="account">
+        <span class="account-state" id="accountState">Nicht verbunden</span>
+        <a class="button button-secondary" id="loginButton" href="/auth/reddit">Mit Reddit verbinden</a>
+        <button class="button button-ghost" id="logoutButton" type="button" hidden>Abmelden</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="composer" aria-labelledby="composerTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Neuer Beitrag</p>
+            <h1 id="composerTitle">Was möchtest du posten?</h1>
+          </div>
+          <span class="save-state" id="saveState">Entwurf gespeichert</span>
+        </div>
+
+        <form id="postForm">
+          <label for="subreddit">Subreddit</label>
+          <div class="prefix-input">
+            <span>r/</span>
+            <input id="subreddit" name="subreddit" autocomplete="off" maxlength="21" placeholder="zum Beispiel de" required />
+          </div>
+
+          <fieldset class="type-switch">
+            <legend>Beitragsart</legend>
+            <label><input type="radio" name="kind" value="self" checked /><span>Text</span></label>
+            <label><input type="radio" name="kind" value="link" /><span>Link</span></label>
+          </fieldset>
+
+          <div class="field-row">
+            <label for="title">Titel</label>
+            <span id="titleCount">0 / 300</span>
+          </div>
+          <input id="title" name="title" maxlength="300" placeholder="Ein klarer Titel hilft anderen beim Antworten" required />
+
+          <div id="textField">
+            <div class="field-row">
+              <label for="text">Text</label>
+              <span id="textCount">0 Zeichen</span>
+            </div>
+            <textarea id="text" name="text" maxlength="40000" rows="11" placeholder="Schreibe deinen Beitrag …"></textarea>
+            <p class="field-help">Reddit-Markdown wird unterstützt.</p>
+          </div>
+
+          <div id="urlField" hidden>
+            <label for="url">Link-Adresse</label>
+            <input id="url" name="url" type="url" placeholder="https://…" />
+          </div>
+
+          <div class="options">
+            <label><input id="nsfw" name="nsfw" type="checkbox" /><span>Als nicht jugendfrei markieren</span></label>
+            <label><input id="spoiler" name="spoiler" type="checkbox" /><span>Als Spoiler markieren</span></label>
+          </div>
+
+          <div class="form-actions">
+            <button class="button button-ghost" id="clearButton" type="button">Entwurf leeren</button>
+            <button class="button button-primary" id="reviewButton" type="submit">Beitrag prüfen</button>
+          </div>
+        </form>
+        <div class="notice" id="notice" role="status" hidden></div>
+      </section>
+
+      <aside class="preview-panel" aria-labelledby="previewTitle">
+        <div class="preview-label">
+          <span>Vorschau</span>
+          <span>Nur für dich sichtbar</span>
+        </div>
+        <article class="reddit-card">
+          <div class="vote-rail" aria-hidden="true"><span>⌃</span><strong>1</strong><span>⌄</span></div>
+          <div class="post-content">
+            <p class="post-meta"><span class="subreddit-dot">r/</span><strong id="previewSubreddit">Subreddit</strong><span>•</span><span>gerade eben</span></p>
+            <h2 id="previewTitle">Dein Titel erscheint hier</h2>
+            <p class="post-body" id="previewBody">Während du schreibst, siehst du hier ungefähr, wie der Beitrag auf Reddit wirken wird.</p>
+            <div class="post-tags" id="previewTags"></div>
+            <div class="post-footer"><span>◯ Kommentare</span><span>↗ Teilen</span><span>•••</span></div>
+          </div>
+        </article>
+        <div class="safety-note">
+          <strong>Du behältst die Kontrolle.</strong>
+          <p>Ein Beitrag wird erst nach deiner Bestätigung öffentlich an Reddit gesendet.</p>
+        </div>
+      </aside>
+    </main>
+
+    <dialog id="confirmDialog">
+      <form method="dialog" class="dialog-card" id="confirmForm">
+        <div class="dialog-icon" aria-hidden="true">↗</div>
+        <p class="eyebrow">Letzte Kontrolle</p>
+        <h2>Beitrag wirklich veröffentlichen?</h2>
+        <p id="confirmSummary"></p>
+        <div class="dialog-warning">Der Beitrag ist danach öffentlich und erscheint unter deinem Reddit-Namen.</div>
+        <div class="dialog-actions">
+          <button class="button button-ghost" value="cancel">Noch einmal bearbeiten</button>
+          <button class="button button-primary" id="publishButton" value="default">Jetzt veröffentlichen</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>
