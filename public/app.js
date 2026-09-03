@@ -16,6 +16,7 @@ const fields = Object.fromEntries(["subreddit", "title", "text", "url", "nsfw", 
 const draftKey = "reddit-poster-draft-v1";
 const favoritesKey = "reddit-poster-favorites-v1";
 let connected = false;
+let apiAvailable = true;
 let saveTimer;
 let installPrompt;
 let favorites = loadFavorites();
@@ -127,6 +128,7 @@ installButton.addEventListener("click", async () => {
 async function loadAccount() {
   try {
     const response = await fetch("/api/me");
+    if (response.status === 503) apiAvailable = false;
     if (!response.ok) throw new Error();
     const account = await response.json();
     connected = true;
@@ -139,7 +141,7 @@ async function loadAccount() {
 }
 
 function renderAccount() {
-  loginButton.hidden = connected;
+  loginButton.hidden = connected || !apiAvailable;
   logoutButton.hidden = !connected;
   if (!connected) accountState.textContent = "Nicht verbunden";
   reviewButton.textContent = connected ? "Beitrag prüfen" : "In Reddit öffnen";
